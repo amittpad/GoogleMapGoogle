@@ -3,13 +3,19 @@ package com.example.amittpad.googlemapgoogle;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -21,9 +27,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String TAG = "MapsActivity";
@@ -36,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Boolean mLocationPermissionGranted = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private EditText mSearchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +55,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //            initMap();
 //        }
         getLocationPermission();
+
+
+    }
+
+    private void initializationView() {
+        mSearchView = (EditText) findViewById(R.id.input_search);
+        mSearchView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || event.getAction() == KeyEvent.ACTION_DOWN
+                        || event.getAction() == KeyEvent.KEYCODE_ENTER) {
+
+                    //execute our method for searching
+                    geoLocate();
+                }
+                return false;
+            }
+        });
+    }
+
+    private void geoLocate() {
+        Log.d(TAG, "geoLocate: geolocation");
+
+        String searchString = mSearchView.getText().toString();
+        Geocoder geocoder = new Geocoder(MapsActivity.this);
+        List<Address> list = new ArrayList<>();
+        try{
+            list = geocoder.getFromLocationName(searchString,1);
+        }catch (IOException e){
+            Log.d(TAG, "geoLocate: IOException " +e.getMessage());
+        }
+
+        if(list.size() > 0){
+            Address address = list.get(0);
+
+            Log.d(TAG, "geoLocate: found a location: " + address.toString());
+            Toast.makeText(this, address.toString(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public boolean isServicesOK() {
@@ -183,7 +234,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             mMap.setMyLocationEnabled(true);
             //For disable the current location button
-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+           // mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+            initializationView();
 
         }
 
