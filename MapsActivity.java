@@ -298,4 +298,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void hideSoftKeyboard() {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN );
     }
+
+   /*
+   ************************Google places API autocomplete suggestion*************
+    */
+
+
+
+
 }
